@@ -1,11 +1,30 @@
 # AI Health Assistant 🩺
 
-[![Streamlit App](https://static.streamlit.io/badge-gradient-teal.svg)](https://streamlit.io)
+[![Deploy to Streamlit](https://static.streamlit.io/badge-streamlit.svg)](https://share.streamlit.io/deploy?repository=https://github.com/Gitersg/AI-Health-Assistant)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Model](https://img.shields.io/badge/LLM-Gemini%201.5%20Flash-orange.svg)](https://aistudio.google.com/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 An advanced, responsive, and secure chat-based web application powered by **Streamlit** and the **Google Gemini API** (using `gemini-1.5-flash`). This assistant helps users evaluate their symptoms in natural language, analyzes risk levels, issues emergency warnings when needed, recommends home care for mild issues, and provides trusted resources for professional clinical guidance.
+
+---
+
+## 🚀 One-Click Web Deployment (Streamlit Community Cloud)
+
+You can deploy this application directly to the web for free. Anyone visiting your link will be able to run it!
+
+1. Click the **Deploy to Streamlit** badge at the top of this page.
+2. Sign in with your GitHub account.
+3. Streamlit will automatically fill in your repository details:
+   - **Repository:** `Gitersg/AI-Health-Assistant`
+   - **Branch:** `main`
+   - **Main file path:** `app.py`
+4. Click **Advanced settings...** at the bottom.
+5. In the **Secrets** text box, paste your API Key using TOML format:
+   ```toml
+   GEMINI_API_KEY = "your_actual_gemini_api_key"
+   ```
+6. Click **Deploy!** Your app will be live and shareable in under a minute.
 
 ---
 
