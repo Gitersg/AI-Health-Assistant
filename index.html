@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Assistant - Instant Symptom Guidance</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.45);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #0ea5e9;
+            --accent-emerald: #10b981;
+            --accent-rose: #ef4444;
+            --sidebar-width: 340px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.4);
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+        }
+
+        /* Sidebar Design */
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-secondary);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            z-index: 100;
+            overflow-y: auto;
+            transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-section i {
+            font-size: 2rem;
+            color: var(--accent-cyan);
+            filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.4));
+        }
+
+        .logo-section h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #38bdf8, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--accent-emerald);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            align-self: flex-start;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-emerald);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 6px var(--accent-emerald);
+            animation: pulse-green 2.5s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.05);
+            margin: 1rem 0;
+            width: 100%;
+        }
+
+        /* Sidebar Section Headings */
+        .sidebar-heading {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* API Key Section */
+        .api-config-container {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .api-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .api-input-wrapper input {
+            width: 100%;
+            background: rgba(11, 15, 25, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem 2.2rem 0.5rem 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .api-input-wrapper input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.25);
+        }
+
+        .api-input-wrapper i {
+            position: absolute;
+            right: 0.75rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .api-input-wrapper i:hover {
+            color: var(--text-primary);
+        }
+
+        /* Warning Cards */
+        .disclaimer-card {
+            border-left: 4px solid var(--accent-rose);
+            background: rgba(239, 68, 68, 0.06);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .disclaimer-card h4 {
+            color: var(--accent-rose);
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .disclaimer-card p {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        .emergency-sidebar-card {
+            border-left: 4px solid var(--accent-rose);
+            background: rgba(239, 68, 68, 0.1);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            animation: border-pulse 2s infinite;
+        }
+
+        @keyframes border-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.25); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .emergency-sidebar-card h4 {
+            color: var(--accent-rose);
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .emergency-sidebar-card p {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .contact-item {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.6rem;
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-item .phone {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-rose);
+        }
+
+        .contact-item .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Resource & Search Links */
+        .link-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .link-list a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .link-list a:hover {
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.06);
+            transform: translateX(3px);
+        }
+
+        .locator-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .locator-btn:hover {
+            border-color: var(--accent-cyan);
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(14, 165, 233, 0.1));
+            color: var(--accent-cyan);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
+        }
+
+        .locator-btn.emergency-btn {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .locator-btn.emergency-btn:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.15));
+            border-color: var(--accent-rose);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        /* Main Chat Area */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: var(--bg-primary);
+            position: relative;
+        }
+
+        /* Header Navigation for Mobile */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.2);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-title p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Chat Content Scroll Container */
+        .chat-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Global Emergency Alert Banner in Chat */
+        .emergency-banner {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+            border-left: 5px solid var(--accent-rose);
+            background: rgba(239, 68, 68, 0.12);
+            padding: 1.25rem;
+            border-radius: 12px;
+            animation: pulse-red-glow 2s infinite;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes pulse-red-glow {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .emergency-banner h3 {
+            color: var(--accent-rose);
+            font-size: 1.1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .emergency-banner p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+        }
+
+        .emergency-banner ul {
+            font-size: 0.85rem;
+            margin-left: 1.25rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .emergency-banner .banner-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Chat Message Bubbles */
+        .message {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+            animation: fade-in 0.3s ease;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            font-weight: 600;
+        }
+
+        .message.user .avatar {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: white;
+        }
+
+        .message.assistant .avatar {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--card-border);
+            color: var(--accent-cyan);
+        }
+
+        .bubble {
+            flex: 1;
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .message.user .bubble {
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-top-left-radius: 2px;
+        }
+
+        .message.assistant .bubble {
+            background: rgba(30, 41, 59, 0.35);
+            border: 1px solid var(--card-border);
+            border-top-right-radius: 2px;
+        }
+
+        /* Render Markdown details in Bubbles */
+        .bubble p {
+            margin-bottom: 0.75rem;
+        }
+        .bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .bubble ul, .bubble ol {
+            margin-left: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        .bubble li {
+            margin-bottom: 0.3rem;
+        }
+        .bubble strong {
+            color: #fff;
+            font-weight: 600;
+        }
+        .bubble h3 {
+            color: var(--accent-cyan);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .bubble h3:first-child {
+            margin-top: 0;
+        }
+
+        /* Symptoms Quick Action Tags */
+        .symptom-tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .symptom-tag {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--card-border);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .symptom-tag:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+            background: rgba(6, 182, 212, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .symptom-tag.red-tag {
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .symptom-tag.red-tag:hover {
+            border-color: var(--accent-rose);
+            color: #fff;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Typing Loader */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.25rem 0;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); opacity: 0.4; }
+            50% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* Message Footer Input Controls */
+        .input-area-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(11, 15, 25, 0.8);
+            padding: 1.5rem 2rem;
+            backdrop-filter: blur(12px);
+            z-index: 10;
+        }
+
+        .input-area-wrapper {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 0.75rem;
+            position: relative;
+            align-items: center;
+        }
+
+        .chat-input-form input {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .chat-input-form input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        .chat-input-form button {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            border: none;
+            color: white;
+            padding: 0.85rem 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .chat-input-form button:hover {
+            background: linear-gradient(135deg, #0f766e, #115e59);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+        }
+
+        .chat-input-form button:disabled {
+            background: var(--text-muted);
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .input-footer {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Mobile Responsive Overrides */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            aside {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            }
+
+            aside.open {
+                transform: translateX(0);
+            }
+
+            .chat-content {
+                padding: 1.25rem;
+            }
+
+            .input-area-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal Overlay -->
+    <div id="login-overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(11, 15, 25, 0.95); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(10px);">
+        <div class="glass-panel" style="max-width: 400px; width: 90%; padding: 2rem;">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-heart-pulse" style="font-size: 2.5rem; color: var(--accent-cyan); filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.4));"></i>
+                <h2 style="margin-top: 1rem; color: var(--accent-cyan);">🩺 AI Health Assistant</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">Please authenticate to access your secure health assistant.</p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem; display: block;">Your Name</label>
+                    <input type="text" id="login-name" placeholder="e.g., John Doe" style="width: 100%; background: rgba(11, 15, 25, 0.8); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.6rem; color: white; outline: none;">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem; display: block;">Gemini API Key</label>
+                    <input type="password" id="login-api-key" placeholder="Paste your API key here..." style="width: 100%; background: rgba(11, 15, 25, 0.8); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.6rem; color: white; outline: none;">
+                </div>
+                <button onclick="handleLogin()" style="width: 100%; background: linear-gradient(135deg, #0d9488, #0f766e); border: none; color: white; padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 0.5rem;">Access Assistant</button>
+                <div id="login-error" style="color: var(--accent-rose); font-size: 0.8rem; text-align: center; display: none; margin-top: 0.5rem;">Please provide both your name and API key.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsive Backdrop for Mobile Sidebar -->
+    <div id="mobile-backdrop" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:90;" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar Layout -->
+    <aside id="sidebar">
+        <div class="logo-section">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <h2>AI Health Assistant</h2>
+        </div>
+
+        <div class="status-badge">
+            <span class="status-dot"></span>
+            <span id="api-status-text">Connecting...</span>
+        </div>
+
+        <!-- User Info & Logout -->
+        <div class="sidebar-heading">👤 Account</div>
+        <div class="api-config-container" style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 0.85rem; color: var(--text-primary);">Logged in as <b id="sidebar-user-name" style="color: var(--accent-cyan);">User</b></div>
+            <button onclick="handleLogout()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">Logout</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Emergency Sidebar Panel -->
+        <div class="emergency-sidebar-card" id="emergency-contacts-card">
+            <h4><i class="fa-solid fa-triangle-exclamation"></i> Emergency Helplines (India)</h4>
+            <p>If you face a medical emergency, call services immediately:</p>
+            <div class="contact-item">
+                <span class="phone">112</span>
+                <span class="label">National Emergency (All-in-One)</span>
+            </div>
+            <div class="contact-item">
+                <span class="phone">108</span>
+                <span class="label">Ambulance Services</span>
+            </div>
+            <div class="contact-item">
+                <span class="phone">102</span>
+                <span class="label">Maternity / Free Ambulance</span>
+            </div>
+        </div>
+
+        <!-- Medical Disclaimer -->
+        <div class="disclaimer-card">
+            <h4><i class="fa-solid fa-circle-exclamation"></i> Strict Disclaimer</h4>
+            <p>This assistant is for educational purposes only and is <strong>NOT</strong> a replacement for professional clinical diagnosis or treatment.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Quick Maps & Doctor Links -->
+        <div class="sidebar-heading">🔍 Find Healthcare Nearby</div>
+        <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" class="locator-btn emergency-btn">
+            <i class="fa-solid fa-map-pin"></i> Emergency Hospitals Near Me
+        </a>
+        <a href="https://www.google.com/maps/search/doctors+near+me" target="_blank" class="locator-btn">
+            <i class="fa-solid fa-user-doctor"></i> Find Doctors Near Me
+        </a>
+        <a href="https://www.practo.com" target="_blank" class="locator-btn">
+            <i class="fa-solid fa-notes-medical"></i> Practo Medical Consultation
+        </a>
+
+        <div class="divider"></div>
+
+        <!-- Trusted Global Resources -->
+        <div class="sidebar-heading">📚 Reliable Resources</div>
+        <ul class="link-list">
+            <li><a href="https://www.who.int" target="_blank"><i class="fa-solid fa-globe"></i> World Health Organization (WHO)</a></li>
+            <li><a href="https://www.mayoclinic.org" target="_blank"><i class="fa-solid fa-hospital"></i> Mayo Clinic</a></li>
+            <li><a href="https://www.cdc.gov" target="_blank"><i class="fa-solid fa-shield-virus"></i> CDC (United States)</a></li>
+            <li><a href="https://www.nhs.uk/conditions/" target="_blank"><i class="fa-solid fa-stethoscope"></i> NHS Health A-Z (UK)</a></li>
+            <li><a href="https://www.mohfw.gov.in" target="_blank"><i class="fa-solid fa-building-shield"></i> Ministry of Health (India)</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Section -->
+    <main>
+        <header>
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <h1>🩺 Clinical Triage Assistant</h1>
+                    <p>Symptom checking & guidance powered by Gemini AI</p>
+                </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);" id="header-connection-status">
+                <i class="fa-solid fa-circle" style="color: var(--accent-emerald); font-size: 0.6rem; vertical-align: middle;"></i> Secured Sandbox
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="chat-content" id="chat-window">
+            
+            <!-- Global Emergency Red Warning Box -->
+            <div class="emergency-banner" id="global-emergency-banner">
+                <h3><i class="fa-solid fa-circle-exclamation"></i> CRITICAL MEDICAL WARNING</h3>
+                <p>The symptoms described suggest a potential life-threatening emergency. **Please do not wait for AI responses.** Take immediate action:</p>
+                <ul>
+                    <li>Call **112** or **108** (India) or your local emergency line immediately.</li>
+                    <li>Go directly to the nearest hospital's Emergency Department.</li>
+                    <li>Contact a family member, friend, or neighbor to assist you.</li>
+                </ul>
+                <div class="banner-actions">
+                    <a href="https://www.google.com/maps/search/emergency+hospitals+near+me" target="_blank" class="locator-btn emergency-btn" style="margin: 0; padding: 0.5rem 1rem;">
+                        <i class="fa-solid fa-location-arrow"></i> Find Closest Emergency Hospital on Maps
+                    </a>
+                </div>
+            </div>
+
+            <!-- Welcome Message -->
+            <div class="message assistant">
+                <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="bubble">
+                    <p>👋 <strong>Welcome to the AI Health Assistant, <span id="welcome-user-name">User</span>!</strong></p>
+                    <p>I am here to help you evaluate symptoms, explain common potential causes, and offer general home care tips for mild issues. Let's discuss what you're experiencing.</p>
+                    <p><em>💬 Describe how you are feeling in natural language below, or click one of the quick symptom tags to start a demo:</em></p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Input Area at Bottom -->
+        <div class="input-area-container">
+            <div class="input-area-wrapper">
+                
+                <!-- Quick symptom triggers -->
+                <div class="symptom-tag-container" id="symptom-tags">
+                    <span class="symptom-tag" onclick="selectSymptom('I have a mild sore throat and a runny nose for 2 days.')">
+                        🤧 Mild Sore Throat
+                    </span>
+                    <span class="symptom-tag" onclick="selectSymptom('My stomach has a dull ache and I feel slightly nauseated after dinner.')">
+                        🤢 Stomach Ache
+                    </span>
+                    <span class="symptom-tag red-tag" onclick="selectSymptom('I am having sudden heavy chest pain spreading to my left arm, and I am struggling to breathe.')">
+                        🚨 Chest Pain (Emergency)
+                    </span>
+                    <span class="symptom-tag red-tag" onclick="selectSymptom('My speech is suddenly slurring, my face feels drooping on one side, and my right hand is weak.')">
+                        🚨 Slurred Speech (Emergency)
+                    </span>
+                </div>
+
+                <!-- Input form -->
+                <form class="chat-input-form" id="chat-form" onsubmit="handleChatSubmit(event)">
+                    <input type="text" id="user-input" autocomplete="off" placeholder="Describe symptoms (e.g., 'Mild headache since morning', 'Scratchy throat')...">
+                    <button type="submit" id="send-btn">
+                        <span>Send</span> <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+
+                <div class="input-footer">
+                    ⚠️ Not a replacement for professional clinical advice. In case of serious symptoms, consult a doctor immediately.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // API Configuration Settings
+        const DEFAULT_API_KEY = "";
+        let currentApiKey = DEFAULT_API_KEY;
+        
+        // System Prompt
+        const SYSTEM_INSTRUCTION = `You are an empathetic, professional AI Health Assistant. Your goal is to guide users inquiring about symptoms.
+
+CRITICAL INSTRUCTIONS:
+1. If the user mentions any potential emergency or high-urgency symptoms (like chest pain, severe breathing difficulty, sudden slurred speech, facial drooping, loss of consciousness, heavy bleeding, poisoning, severe allergic reactions), you MUST start your response with a very prominent, clear, and urgent directive to CALL EMERGENCY SERVICES (112 or 108 in India) and seek immediate medical attention.
+2. When dealing with mild, non-emergency issues, follow these structure steps:
+   - Empathy & Verification: Acknowledge the user's situation and ask 2-3 relevant follow-up questions to gain more context (e.g., duration, triggers, severity).
+   - Possible Causes: List a few common potential causes in bullet points. Clearly emphasize these are just possibilities, not a diagnosis.
+   - Home Care: Provide general, safe, and actionable home care tips suitable for mild concerns.
+   - Medical Referral: Recommend consulting a healthcare professional for actual diagnosis.
+3. ALWAYS include a brief, clear medical disclaimer at the end of every message, stating that you are an AI assistant and not a medical doctor.
+4. Maintain a supportive, reassuring, but highly responsible and safe medical tone. Never diagnose or prescribe specific medications. Recommend OTC relief only with a strong advisory to check with a pharmacist or doctor.`;
+
+        // Urgency Keywords Check (Layer 1)
+        const URGENT_KEYWORDS = [
+            /\bchest\s+pain\b/i, /\bheart\s+attack\b/i, /\bbreathing\s+difficulty\b/i,
+            /\bdifficulty\s+breathing\b/i, /\bshortness\s+of\s+breath\b/i, /\bchoking\b/i,
+            /\bunconscious\b/i, /\bloss\s+of\s+consciousness\b/i, /\bpassed\s+out\b/i,
+            /\bheavy\s+bleeding\b/i, /\buncontrolled\s+bleeding\b/i, /\bsevere\s+bleeding\b/i,
+            /\bsevere\s+pain\b/i, /\bstroke\b/i, /\bspeech\s+slur\b/i, /\bslurred\s+speech\b/i,
+            /\bparalysis\b/i, /\bface\s+droop\b/i, /\bseizure\b/i, /\bconvulsion\b/i,
+            /\bpoisoning\b/i, /\boverdose\b/i, /\bsevere\s+burn\b/i, /\banaphylaxis\b/i,
+            /\bsevere\s+allergic\s+reaction\b/i, /\bsuicidal\b/i, /\bharm\s+myself\b/i
+        ];
+
+        // Chat Memory History array
+        let chatHistory = [];
+        let isGenerating = false;
+        let currentUser = "";
+
+        // Handle Login
+        function handleLogin() {
+            const name = document.getElementById('login-name').value.trim();
+            const key = document.getElementById('login-api-key').value.trim();
+            const errorEl = document.getElementById('login-error');
+            
+            if (name && key) {
+                errorEl.style.display = 'none';
+                currentUser = name;
+                currentApiKey = key;
+                
+                // Save to localStorage as a bound credential
+                localStorage.setItem('health_assistant_api_key', key);
+                localStorage.setItem('health_assistant_user_name', name);
+                
+                // Hide modal and update UI
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('welcome-user-name').textContent = currentUser;
+                document.getElementById('sidebar-user-name').textContent = currentUser;
+                validateApiKeyStatus();
+            } else {
+                errorEl.style.display = 'block';
+            }
+        }
+
+        // Handle Logout
+        function handleLogout() {
+            localStorage.removeItem('health_assistant_api_key');
+            localStorage.removeItem('health_assistant_user_name');
+            location.reload();
+        }
+
+        // On Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('health_assistant_api_key');
+            const savedName = localStorage.getItem('health_assistant_user_name');
+            
+            if (savedKey && savedName) {
+                // Already authenticated, bypass login
+                currentUser = savedName;
+                currentApiKey = savedKey;
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('welcome-user-name').textContent = currentUser;
+                document.getElementById('sidebar-user-name').textContent = currentUser;
+                validateApiKeyStatus();
+            }
+        });
+
+        // Test API health
+        function validateApiKeyStatus() {
+            const dot = document.querySelector('.status-dot');
+            const badgeText = document.getElementById('api-status-text');
+            
+            if (!currentApiKey) {
+                dot.style.backgroundColor = "var(--accent-rose)";
+                dot.style.boxShadow = "0 0 6px var(--accent-rose)";
+                badgeText.textContent = "Missing API Key";
+                return;
+            }
+            
+            badgeText.textContent = "API Key Integrated";
+            dot.style.backgroundColor = "var(--accent-emerald)";
+            dot.style.boxShadow = "0 0 6px var(--accent-emerald)";
+        }
+
+        // Toggle Sidebar visibility
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-backdrop');
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) {
+                backdrop.style.display = 'block';
+            } else {
+                backdrop.style.display = 'none';
+            }
+        }
+
+        // Hide/Show password style API Key
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('api-key-input');
+            const icon = document.getElementById('toggle-api-key-btn');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.className = "fa-solid fa-eye-slash";
+            } else {
+                input.type = "password";
+                icon.className = "fa-solid fa-eye";
+            }
+        }
+
+        // Pre-fill input from quick tag
+        function selectSymptom(text) {
+            const input = document.getElementById('user-input');
+            input.value = text;
+            input.focus();
+        }
+
+        // Check text for urgency indicators
+        function checkUrgency(text) {
+            for (let regex of URGENT_KEYWORDS) {
+                if (regex.test(text)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Trigger visual emergency warnings
+        function triggerEmergencyWarning() {
+            const banner = document.getElementById('global-emergency-banner');
+            banner.style.display = 'flex';
+            banner.scrollIntoView({ behavior: 'smooth' });
+            
+            // Pulse contacts card in sidebar
+            const contactsCard = document.getElementById('emergency-contacts-card');
+            contactsCard.style.backgroundColor = 'rgba(239, 68, 68, 0.25)';
+            contactsCard.style.borderColor = 'var(--accent-rose)';
+        }
+
+        // Custom Simple Markdown Parser
+        function parseMarkdown(text) {
+            // Escape HTML tags to protect against XSS
+            let html = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // Format bold text
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+
+            // Format italic text
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+            // Headings
+            html = html.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+
+            // Bullet points
+            const lines = html.split('\n');
+            let inList = false;
+            let processedLines = [];
+
+            for (let line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+                    if (!inList) {
+                        processedLines.push('<ul>');
+                        inList = true;
+                    }
+                    processedLines.push(`<li>${trimmed.substring(2)}</li>`);
+                } else {
+                    if (inList) {
+                        processedLines.push('</ul>');
+                        inList = false;
+                    }
+                    if (trimmed === '') {
+                        processedLines.push('<br>');
+                    } else {
+                        // If it's already structured HTML headings, don't wrap in p
+                        if (trimmed.startsWith('<h3') || trimmed.startsWith('<h2') || trimmed.startsWith('<h1')) {
+                            processedLines.push(line);
+                        } else {
+                            processedLines.push(`<p>${line}</p>`);
+                        }
+                    }
+                }
+            }
+
+            if (inList) {
+                processedLines.push('</ul>');
+            }
+
+            return processedLines.join('\n');
+        }
+
+        // Core Chat Submission Logic
+        async function handleChatSubmit(e) {
+            if (e) e.preventDefault();
+            
+            const inputEl = document.getElementById('user-input');
+            const query = inputEl.value.trim();
+            if (!query || isGenerating) return;
+
+            // Block further inputs during generation
+            isGenerating = true;
+            document.getElementById('send-btn').disabled = true;
+            inputEl.value = '';
+
+            // Render User Bubble
+            appendMessage('user', query);
+
+            // Layer 1: Check urgency from user's input
+            const localUrgency = checkUrgency(query);
+            if (localUrgency) {
+                triggerEmergencyWarning();
+            }
+
+            // Save to memory (user role)
+            chatHistory.push({
+                role: "user",
+                parts: [{ text: query }]
+            });
+
+            // Create placeholder for assistant response
+            const responseId = appendLoadingMessage();
+
+            try {
+                // Perform direct fetch to Google Gemini API
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentApiKey}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: chatHistory,
+                        systemInstruction: {
+                            parts: [{ text: SYSTEM_INSTRUCTION }]
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+
+                // Parse and update the response bubble
+                updateMessage(responseId, replyText);
+
+                // Layer 2: Check model output for emergency indicators
+                const lowerReply = replyText.toLowerCase();
+                const emergencyIdentifiers = ["emergency", "call 112", "call 108", "hospital immediately", "emergency room", "emergency department", "immediate medical attention"];
+                const aiFlaggedUrgency = emergencyIdentifiers.some(word => lowerReply.includes(word));
+                if (aiFlaggedUrgency) {
+                    triggerEmergencyWarning();
+                }
+
+                // Save to memory (model role)
+                chatHistory.push({
+                    role: "model",
+                    parts: [{ text: replyText }]
+                });
+
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                updateMessageWithError(responseId, `Unable to connect to Gemini API. Error: ${error.message}. Please verify your API key configuration in the sidebar.`);
+            } finally {
+                isGenerating = false;
+                document.getElementById('send-btn').disabled = false;
+            }
+        }
+
+        // Add message to chat screen
+        function appendMessage(role, text) {
+            const chatWindow = document.getElementById('chat-window');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const icon = role === 'user' ? 'fa-user' : 'fa-robot';
+            const parsedContent = role === 'user' ? `<p>${text}</p>` : parseMarkdown(text);
+
+            messageDiv.innerHTML = `
+                <div class="avatar"><i class="fa-solid ${icon}"></i></div>
+                <div class="bubble">${parsedContent}</div>
+            `;
+
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // Add animated load placeholder
+        function appendLoadingMessage() {
+            const chatWindow = document.getElementById('chat-window');
+            const messageDiv = document.createElement('div');
+            const uniqueId = 'loader-' + Date.now();
+            messageDiv.className = 'message assistant';
+            messageDiv.id = uniqueId;
+
+            messageDiv.innerHTML = `
+                <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="bubble">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return uniqueId;
+        }
+
+        // Swap loader bubble with real response
+        function updateMessage(loaderId, replyText) {
+            const loaderDiv = document.getElementById(loaderId);
+            if (loaderDiv) {
+                loaderDiv.querySelector('.bubble').innerHTML = parseMarkdown(replyText);
+                const chatWindow = document.getElementById('chat-window');
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }
+
+        // Render red error box inside bubble on failure
+        function updateMessageWithError(loaderId, errorMessage) {
+            const loaderDiv = document.getElementById(loaderId);
+            if (loaderDiv) {
+                loaderDiv.querySelector('.bubble').innerHTML = `
+                    <div style="color: var(--accent-rose); display: flex; align-items: flex-start; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-xmark" style="margin-top: 0.2rem;"></i>
+                        <span>${errorMessage}</span>
+                    </div>
+                `;
+                const chatWindow = document.getElementById('chat-window');
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>
